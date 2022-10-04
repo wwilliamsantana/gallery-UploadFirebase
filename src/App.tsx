@@ -1,11 +1,37 @@
-import { useEffect, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
+import { PhotoItem } from "./components/PhotoItem"
 import * as Photos from "./services/Photo"
 
 export function App() {
   
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [photos, setPhotos] = useState<Photos.PhotoProps[]>([])
 
+
+  async function handleFormSubmit(e: FormEvent<HTMLFormElement>){
+    e.preventDefault()
+
+    const formData = new FormData(e.currentTarget)
+    const file = formData.get("image") as File
+
+    if(file && file.size > 0){
+      setUploading(true)
+      let result = await Photos.insert(file)
+      setUploading(false)
+
+      if(result instanceof Error){
+        alert(`${result.name} - ${result.message}`)
+      }else{
+        let newPhotoList = [...photos]
+        newPhotoList.push(result)
+        setPhotos(newPhotoList)
+      }
+
+    }
+
+
+  }
 
   useEffect(() => {
 
@@ -24,6 +50,28 @@ export function App() {
 
         <h1 className="text-center mb-8 text-[42px] font-bold">Galeria de Fotos</h1>
 
+
+        <form 
+          className="bg-slate-600 p-4 rounded-xl mb-7"
+          method="POST" 
+          onSubmit={handleFormSubmit}>
+          <input type="file" name="image"  />
+          <input 
+            className="bg-violet-600 border-none text-white py-2 px-4 text-base rounded-xl mx-5 cursor-pointer hover:bg-violet-500"
+            type="submit" 
+            value="Enviar" 
+            />
+
+            {
+              uploading && "Enviando..."
+            }
+
+
+        </form>
+
+
+
+
         {loading && 
 
           <div className="text-center">
@@ -33,11 +81,9 @@ export function App() {
         }
 
         {!loading && photos.length > 0 &&
-          <div>
+          <div className="grid grid-cols-4 gap-[10px]">
             {photos.map((item, index) => (
-              <div className="grid grid-cols-4 gap-3">
-                {item.name}
-              </div>
+              <PhotoItem key={index} url={item.url} name={item.name}/>
             ) )}
           </div>
         }
