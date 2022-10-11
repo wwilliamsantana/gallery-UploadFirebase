@@ -3,7 +3,7 @@ import { getStorage } from "firebase/storage"
 
 
 const firebaseConfig = {
-  apiKey: "",
+  apiKey: "", //Preencha estes campos vazios com as informações do seu Storage!
   authDomain: "",
   projectId: "",
   storageBucket: "",
